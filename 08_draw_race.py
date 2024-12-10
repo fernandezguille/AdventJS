@@ -18,15 +18,9 @@ Each reindeer is represented with the letter r.
 Lanes are numbered at the end with /1, /2, etc.
 The view is isometric, so the lower lanes are shifted to the right.
 """
-# def draw_race(indices: list[int], length: int) -> str:
-#   fixed_indices: list[int] = [index if index >= 0 else length+index for index in indices]
-#   lanes: list[str] = []
-#   total_lanes: int = len(fixed_indices)
-#   for number, reindeer_position in enumerate(fixed_indices, 1):
-#     lane: str = " "*(total_lanes-number) + "".join("~" if i != reindeer_position or i == 0 else 'r' for i in range(length)) + f" /{number}"
-#     lanes.append(lane)
-#   return "\n".join(lanes)
+from timeit import timeit
 
+# Best performance solution
 def draw_race(indices: list[int], length: int) -> str:
   total_lanes: int = len(indices)
   lanes: list[str] = []
@@ -38,5 +32,34 @@ def draw_race(indices: list[int], length: int) -> str:
     lanes.append(str_lane)
   return '\n'.join(lanes)
 
+def draw_race1(indices: list[int], length: int) -> str:
+  fixed_indices: list[int] = [index if index >= 0 else length+index for index in indices]
+  lanes: list[str] = []
+  total_lanes: int = len(fixed_indices)
+  for number, reindeer_position in enumerate(fixed_indices, 1):
+    lane: str = " "*(total_lanes-number) + "".join("~" if i != reindeer_position or i == 0 else 'r' for i in range(length)) + f" /{number}"
+    lanes.append(lane)
+  return "\n".join(lanes)
+
+# Wrapper to execute the function and capture result
+def create_wrapper(name, *args, **kwargs):
+  def inner() -> None:
+    global result  # global variable to store result
+    result = name(*args, **kwargs)
+  return inner
+
+result = None
+args = [2, -1, 0, 5, -3], 10
+
+# Warmup
+wrapper = create_wrapper(draw_race, *args)
+execution_time = timeit(wrapper, number=100000)
+
+# Performance test
+for function_name in (draw_race, draw_race1):
+  wrapper = create_wrapper(function_name, *args)
+  times = 100_000
+  print(f"{function_name.__name__:} took average {timeit(wrapper, number=times) / times*1000:.8f} microsec. Result:\n{result}")
+
 # Example
-print(draw_race([2, -1, 0, 5, -3], 10))
+# print(draw_race(args))
